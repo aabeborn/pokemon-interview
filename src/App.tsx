@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import PokemonCard from "./PokemonCard";
+import "./App.css";
+import { PokemonList } from "./types";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+async function fetchPokemons(): Promise<PokemonList> {
+  try {
+    const res = await fetch(
+      " https://pokeapi.co/api/v2/pokemon?limit=25&offset=0"
+    );
+    if (res.ok) {
+      return res.json() as Promise<PokemonList>;
+    } else {
+      throw new Error("Something went wrong");
+    }
+  } catch (err) {
+    console.log(err);
+  }
+  throw new Error("Something went wrong");
 }
 
-export default App
+function App() {
+  const [pokemons, setPokemons] = useState<PokemonList["results"]>([]);
+
+  useEffect(() => {
+    fetchPokemons().then((data) => setPokemons(data.results));
+  }, []);
+
+  return (
+    <main className="w-full h-full overflow-scroll bg-red-50 flex flex-col gap-4 items-center p-8">
+      {pokemons.map((pokemon) => {
+        return <PokemonCard key={pokemon.name} url={pokemon.url} />;
+      })}
+    </main>
+  );
+}
+
+export default App;
